@@ -29,7 +29,7 @@ export const transferToAsset = (transfer: any) => ({
 })
 
 export const getAllTransfersFromAlchemy = async (blockNumber: number, toAddress: string, transaction: string, pageKey?: string) => {
-  let id = Date.now();
+  let id = Math.random();
   const alchemyRequest = {
     jsonrpc: '2.0',
     id,
@@ -43,7 +43,10 @@ export const getAllTransfersFromAlchemy = async (blockNumber: number, toAddress:
     }]
   }
 
-  const { data: { result } } = await axios.post(`https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_ID}`, alchemyRequest);
+  const { data: { result } } = await axios.post(
+    `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_ID}`,
+    alchemyRequest,
+    );
 
   const additionalTransfers = result.pageKey
     ? await getAllTransfersFromAlchemy(blockNumber, toAddress, transaction, result.pageKey)
