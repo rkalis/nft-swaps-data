@@ -28,17 +28,17 @@ export const transferToAsset = (transfer: any) => ({
   amount: transfer.value,
 })
 
-export const getAllTransfersFromAlchemy = async (fromBlock: number, toBlock: number, fromAddress: string, transaction: string, pageKey?: string) => {
+export const getAllTransfersFromAlchemy = async (blockNumber: number, toAddress: string, transaction: string, pageKey?: string) => {
   let id = Date.now();
   const alchemyRequest = {
     jsonrpc: '2.0',
     id,
     method: 'alchemy_getAssetTransfers',
     params: [{
-      fromBlock: `0x${fromBlock.toString(16)}`,
-      toBlock: `0x${toBlock.toString(16)}`,
+      fromBlock: `0x${blockNumber.toString(16)}`,
+      toBlock: `0x${blockNumber.toString(16)}`,
       category: ['external', 'internal', 'erc20', 'erc721', 'erc1155'],
-      fromAddress: fromAddress,
+      toAddress,
       pageKey,
     }]
   }
@@ -46,7 +46,7 @@ export const getAllTransfersFromAlchemy = async (fromBlock: number, toBlock: num
   const { data: { result } } = await axios.post(`https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_ID}`, alchemyRequest);
 
   const additionalTransfers = result.pageKey
-    ? await getAllTransfersFromAlchemy(fromBlock, toBlock, fromAddress, transaction, result.pageKey)
+    ? await getAllTransfersFromAlchemy(blockNumber, toAddress, transaction, result.pageKey)
     : [];
 
   const transfersForTransaction = result.transfers.filter((transfer: any) => transfer.hash == transaction)
