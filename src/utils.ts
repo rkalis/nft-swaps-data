@@ -1,0 +1,57 @@
+import { Trade } from './types';
+import { config } from 'dotenv';
+import axios from 'axios';
+
+config();
+
+export const splitTrades = (trades: Trade[]) => {
+  // Sales trade 1 or more NFTs for non-NFT assets (but no NFTs)
+  const sales = trades.filter((trade) => {
+    const makerHasNfts = trade.makerAssets.some((asset) => ['ERC721', 'ERC1155'].includes(asset.class))
+    const takerHasNfts = trade.takerAssets.some((asset) => ['ERC721', 'ERC1155'].includes(asset.class))
+    return (makerHasNfts || takerHasNfts) && makerHasNfts !== takerHasNfts;
+  });
+
+  // Swaps trade 1 or more NFTs for 1 or more NFTs (+ more)
+  const swaps = trades.filter((trade) => {
+    const makerHasNfts = trade.makerAssets.some((asset) => ['ERC721', 'ERC1155'].includes(asset.class))
+    const takerHasNfts = trade.takerAssets.some((asset) => ['ERC721', 'ERC1155'].includes(asset.class))
+    return makerHasNfts && takerHasNfts;
+  });
+
+  return { sales, swaps };
+}
+
+export const transferToAsset = (transfer: any) => ({
+  class: transfer.category == 'internal' || transfer.category == 'external' ? 'ETH' : transfer.category.toUpperCase(),
+  contractAddress: transfer.rawContract?.address,
+  amount: transfer.value,
+})
+
+export const getAllTransfersFromAlchemy = async (fromBlock: number, toBlock: number, fromAddress: string, transaction: string, pageKey?: string) => {
+  let id = Date.now();
+  const alchemyRequest = {
+    jsonrpc: '2.0',
+    id,
+    method: 'alchemy_getAssetTransfers',
+    params: [{
+      fromBlock: `0x${fromBlock.toString(16)}`,
+      toBlock: `0x${toBlock.toString(16)}`,
+      category: ['external', 'internal', 'erc20', 'erc721', 'erc1155'],
+      fromAddress: fromAddress,
+      pageKey,
+    }]
+  }
+
+  const { data: { result } } = await axios.post(`https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_ID}`, alchemyRequest);
+
+  const additionalTransfers = result.pageKey
+    ? await getAllTransfersFromAlchemy(fromBlock, toBlock, fromAddress, transaction, result.pageKey)
+    : [];
+
+  const transfersForTransaction = result.transfers.filter((transfer: any) => transfer.hash == transaction)
+
+  const allTransfers = [...additionalTransfers, ...transfersForTransaction];
+
+  return allTransfers;
+}
