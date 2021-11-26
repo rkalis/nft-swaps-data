@@ -11,3 +11,13 @@ export interface Asset {
   contract?: string;
   amount?: number;
 }
+
+export interface SimpleTrade {
+  transactionHash: string;
+  maker: string;
+  taker: string;
+  blockNumber: number;
+}
+
+export type Platform = 'Sudoswap' | 'NFTTrader' | 'Swap.kiwi';
+export type Period = '1d' | '7d' | '30d';

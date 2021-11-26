@@ -6,14 +6,17 @@
   "author": "Rosco Kalis <roscokalis@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.24.0",
     "dotenv": "^10.0.0",
-    "ethers": "^5.5.1"
+    "ethers": "^5.5.1",
+    "got": "^11.8.3"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
     "@types/node": "^16.11.10",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
+  },
+  "scripts": {
+    "measure": "ts-node src/index.ts"
   }
 }
