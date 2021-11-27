@@ -1,13 +1,18 @@
+import { utils } from 'ethers';
+import Moralis from 'moralis/node';
+import moment from 'moment';
 import got from 'got';
 import { Asset, SimpleTrade, Trade } from './types';
-import { ALCHEMY_ENDPOINT, BLOCKS_7D, MORALIS_APP_ID, MORALIS_SERVER_URL, WETH_ADDRESS } from './constants';
-import { getAddress } from '@ethersproject/address';
-import Moralis from 'moralis/node';
+import { ALCHEMY_ENDPOINT, MORALIS_APP_ID, MORALIS_SERVER_URL, WETH_ADDRESS } from './constants';
 
 Moralis.start({
   serverUrl: MORALIS_SERVER_URL,
   appId: MORALIS_APP_ID,
 });
+
+export const getBlockForDate = (date: string) => {
+  return Moralis.Web3API.native.getDateToBlock({ date });
+}
 
 export const splitTrades = (trades: Trade[]) => {
   // Sales trade 1 or more NFTs for non-NFT assets (but no NFTs)
@@ -29,7 +34,7 @@ export const splitTrades = (trades: Trade[]) => {
 
 export const transferToAsset = (transfer: any) => ({
   class: transfer.category == 'internal' || transfer.category == 'external' ? 'ETH' : transfer.category.toUpperCase(),
-  contractAddress: transfer.rawContract?.address && getAddress(transfer.rawContract?.address),
+  contractAddress: transfer.rawContract?.address && utils.getAddress(transfer.rawContract?.address),
   amount: transfer.value,
 })
 
@@ -91,8 +96,8 @@ export const totalVolume = (trades: Trade[]) => (
   )
 )
 
-export const addValueToTrades = async (trades: Trade[], blockNumber: number) => {
-  const priceMap = await getAssetPriceMap(trades, blockNumber);
+export const addValueToTrades = async (trades: Trade[]) => {
+  const priceMap = await getAssetPriceMap(trades);
   return trades.map((trade) => ({
     ...trade,
     makerAssets: trade.makerAssets.map((asset) => addValueToAsset(asset, priceMap)),
@@ -110,7 +115,7 @@ export const addValueToAsset = (asset: Asset, priceMap: Map<string, number>) => 
   return { ...asset, value };
 }
 
-export const getAssetPriceMap = async (trades: Trade[], blockNumber: number, chunkSize: number = 25) => {
+export const getAssetPriceMap = async (trades: Trade[], chunkSize: number = 25) => {
   const allAssets = trades.flatMap((trade) => [...trade.makerAssets, ...trade.takerAssets])
   const wethAsset = {
     class: 'ERC20' as const,
@@ -123,17 +128,17 @@ export const getAssetPriceMap = async (trades: Trade[], blockNumber: number, chu
     .filter((asset) => asset.class !== 'ETH')
     .filter((asset, i) => i === allAssets.findIndex((other) => asset.contractAddress === other.contractAddress));
 
-  const prices = await performAsyncInChunks(deduplicatedAssets, chunkSize, (asset) => getAssetPriceEntry(asset, blockNumber));
+  const prices = await performAsyncInChunks(deduplicatedAssets, chunkSize, (asset) => getAssetPriceEntry(asset));
   const priceMap = new Map(prices);
 
   return priceMap;
 }
 
-export const getAssetPriceEntry = async (asset: Asset, blockNumber: number): Promise<[string, number]> => {
+export const getAssetPriceEntry = async (asset: Asset): Promise<[string, number]> => {
   const address = asset.class === 'ETH' ? WETH_ADDRESS : asset.contractAddress!;
   const price = asset.class === 'ETH' || asset.class === 'ERC20'
     ? await getErc20Price(address)
-    : await getNftPrice(address, blockNumber);
+    : await getNftPrice(address);
 
   return [address, price];
 }
@@ -149,9 +154,10 @@ export const getErc20Price = async (contractAddress: string): Promise<number> =>
   }
 }
 
-export const getNftPrice = async (contractAddress: string, blockNumber: number,): Promise<number> => {
+export const getNftPrice = async (contractAddress: string): Promise<number> => {
   try {
-    const fromBlock = blockNumber - BLOCKS_7D;
+    const fromDate = moment().subtract(7, 'days').toISOString();
+    const { block: fromBlock } = await getBlockForDate(fromDate);
 
     const request = {
       '@type': 'by_collection',
@@ -164,7 +170,7 @@ export const getNftPrice = async (contractAddress: string, blockNumber: number,)
       { json: request, responseType: 'json' },
     ) as any;
 
-    const salesInRange = sales.filter((sale: any) => sale.blockNumber > fromBlock && sale.blockNumber <= blockNumber);
+    const salesInRange = sales.filter((sale: any) => sale.blockNumber > fromBlock);
     if (salesInRange.length === 0) return 0;
 
     const totalPrice = salesInRange.reduce((totalPrice: number, sale: any) => totalPrice + (sale.priceUsd ?? 0), 0)

@@ -9,6 +9,7 @@
     "dotenv": "^10.0.0",
     "ethers": "^5.5.1",
     "got": "^11.8.3",
+    "moment": "^2.29.1",
     "moralis": "^0.0.135"
   },
   "devDependencies": {
