@@ -8,8 +8,9 @@ export interface Trade {
 
 export interface Asset {
   class: 'ETH' | 'ERC20' | 'ERC721' | 'ERC1155';
-  contract?: string;
+  contractAddress?: string;
   amount?: number;
+  value?: number;
 }
 
 export interface SimpleTrade {
@@ -20,4 +21,3 @@ export interface SimpleTrade {
 }
 
 export type Platform = 'Sudoswap' | 'NFTTrader' | 'Swap.kiwi';
-export type Period = '1d' | '7d' | '30d';

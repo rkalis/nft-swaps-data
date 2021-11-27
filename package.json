@@ -8,7 +8,8 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "ethers": "^5.5.1",
-    "got": "^11.8.3"
+    "got": "^11.8.3",
+    "moralis": "^0.0.135"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
