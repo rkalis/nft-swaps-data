@@ -1,7 +1,11 @@
-export interface Trade {
+export interface SimpleTrade {
   transactionHash: string;
   maker: string;
   taker: string;
+  blockNumber: number;
+}
+
+export interface Trade extends SimpleTrade {
   makerAssets: Asset[];
   takerAssets: Asset[];
 }
@@ -13,11 +17,5 @@ export interface Asset {
   value?: number;
 }
 
-export interface SimpleTrade {
-  transactionHash: string;
-  maker: string;
-  taker: string;
-  blockNumber: number;
-}
 
 export type Platform = 'Sudoswap' | 'NFTTrader' | 'Swap.kiwi';
