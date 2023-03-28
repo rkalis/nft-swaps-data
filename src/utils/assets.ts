@@ -42,7 +42,7 @@ export const getAllTransfersFromAlchemy = async (
   return allTransfers;
 }
 
-export const addAssetsToTrades = async (simpleTrades: SimpleTrade[], chunkSize: number = 25) => {
+export const addAssetsToTrades = async (simpleTrades: SimpleTrade[], chunkSize: number = 1) => {
   const trades = await performAsyncInChunks(simpleTrades, chunkSize, async (simpleTrade) => {
     const { transactionHash, blockNumber, maker, taker } = simpleTrade;
 

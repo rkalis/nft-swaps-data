@@ -1,9 +1,8 @@
-import Moralis from 'moralis/node';
-import { MORALIS_APP_ID, MORALIS_SERVER_URL } from '../constants';
+import Moralis from 'moralis';
+import { MORALIS_API_KEY } from '../constants';
 
 Moralis.start({
-  serverUrl: MORALIS_SERVER_URL,
-  appId: MORALIS_APP_ID,
+  apiKey: MORALIS_API_KEY,
 });
 
 export * from './trades';

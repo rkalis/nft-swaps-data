@@ -23,7 +23,22 @@ The script filters on "completed swap" events on the respective contracts for th
 
 The script makes a distinction between *swaps*, which contain NFTs on both sides of the trade, and *sales*, which only contains NFTs on a single side. Any trades that somehow do not include NFTs on either side have been filtered out.
 
-## Latest data (2021-11-30)
+## Latest data
+
+### 2023-03-28
+```
+Sudoswap 30d:
+  Swaps: 57 ($571k total / $10k average)
+  Sales: 99 ($1989k total / $20k average)
+NFTTrader 30d:
+  Swaps: 231 ($1112k total / $5k average)
+  Sales: 22 ($674k total / $31k average)
+Swap.kiwi 30d:
+  Swaps: 4 ($11k total / $3k average)
+  Sales: 0 ($0k total / $0k average)
+```
+
+### 2021-11-30
 ```
 Sudoswap 30d:
   Swaps: 209 ($3282k total / $16k average)

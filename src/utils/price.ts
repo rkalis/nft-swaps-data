@@ -1,6 +1,6 @@
 import got from 'got';
 import moment from 'moment';
-import Moralis from 'moralis/node';
+import Moralis from 'moralis';
 import { getBlockForDate, performAsyncInChunks } from '.';
 import { WETH_ADDRESS } from '../constants';
 import { Asset, Trade } from '../types';
@@ -24,7 +24,7 @@ export const addValueToAsset = (asset: Asset, priceMap: Map<string, number>) => 
   return { ...asset, value };
 }
 
-export const getAssetPriceMap = async (trades: Trade[], chunkSize: number = 25) => {
+export const getAssetPriceMap = async (trades: Trade[], chunkSize: number = 10) => {
   const allAssets = trades.flatMap((trade) => [...trade.makerAssets, ...trade.takerAssets])
   const wethAsset = {
     class: 'ERC20' as const,
@@ -54,7 +54,7 @@ export const getAssetPriceEntry = async (asset: Asset): Promise<[string, number]
 
 export const getErc20Price = async (contractAddress: string): Promise<number> => {
   try {
-    const { usdPrice } = await Moralis.Web3API.token.getTokenPrice({ address: contractAddress });
+    const { usdPrice } = await Moralis.EvmApi.token.getTokenPrice({ address: contractAddress }).then((res) => res.toJSON());
     return usdPrice
   } catch (e) {
     // console.log('>>> FAILED TO GET PRICE FROM MORALIS', contractAddress, e);

@@ -1,7 +1,7 @@
-import Moralis from 'moralis/node';
+import Moralis from 'moralis';
 
-export const getBlockForDate = (date: string) => {
-  return Moralis.Web3API.native.getDateToBlock({ date });
+export const getBlockForDate = async (date: string) => {
+  return Moralis.EvmApi.block.getDateToBlock({ date }).then((res) => res.toJSON());
 }
 
 // https://stackoverflow.com/questions/40682103/splitting-an-array-up-into-chunks-of-a-given-size
